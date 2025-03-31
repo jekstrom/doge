@@ -116,7 +116,7 @@ const cache = new NodeCache();
 async function get<T>(path: string): Promise<T> {
   const uri = `${efcrBaseUrl}/${path}`;
 
-  let json = cache.get<T>(uri);
+  const json = cache.get<T>(uri);
 
   if (!!json) {
     console.log(`cache hit`)
@@ -138,7 +138,7 @@ async function get<T>(path: string): Promise<T> {
 async function getXml(path: string): Promise<string> {
   const uri = `${efcrBaseUrl}/${path}`;
 
-  let text = cache.get(uri) as string;
+  const text = cache.get(uri) as string;
   if (!!text) {
     console.log(`cache hit`)
     return text;
@@ -176,14 +176,14 @@ export function calculateMD5(str: string): string {
 }
 
 export async function getVersions(title: number): Promise<HistoricalChange[]> {
-  let changes: HistoricalChange[] = [];
+  const changes: HistoricalChange[] = [];
   try {
     const uri = `${apiPath}/versions/title-${title}.json`;
 
     const versionJson = await get<VersionJson>(`${uri}`);
 
     for (let i = 0; i < versionJson.content_versions.length; ++i) {
-      let version = versionJson.content_versions[i];
+      const version = versionJson.content_versions[i];
 
       if (!version.substantive) {
         continue;
@@ -221,7 +221,7 @@ function findChapter(hierarchyJson: HierarchyJson, chapter: string): HierarchyJs
       found = hierarchyJson;
     } else if (hierarchyJson.children && hierarchyJson.children.length > 0) {
       for (let i = 0; i < hierarchyJson.children.length; ++i) {
-        let nestedFound = findChapter(hierarchyJson.children[i], chapter);
+        const nestedFound = findChapter(hierarchyJson.children[i], chapter);
         if (nestedFound) {
           found = nestedFound;
         }
@@ -232,14 +232,11 @@ function findChapter(hierarchyJson: HierarchyJson, chapter: string): HierarchyJs
 }
 
 export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> {
-  // Get word count of all regulations for an agency from eFCR
-  const currentDate = new Date().toISOString().split('T')[0];
-
   const titleJson = await get<TitleJson>(`${apiPath}/${titlesPath}`);
 
   const parser = new XMLParser();
 
-  var statistics: StatisticsResult = {
+  const statistics: StatisticsResult = {
     wordCount: 0,
     changes: [],
     checksum: "",
@@ -255,8 +252,8 @@ export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> 
 
     console.log(`Filtering titles by title ${ref.title}, chapter: ${ref.chapter}`)
 
-    let title = titleJson.titles.filter((t) => t.number === ref.title)[0];
-    let mostRecentTitleDate = title.up_to_date_as_of;
+    const title = titleJson.titles.filter((t) => t.number === ref.title)[0];
+    const mostRecentTitleDate = title.up_to_date_as_of;
 
     const key = title.name;
     statistics.regsByTitle.set(key, (statistics.regsByTitle.get(key) ?? 0) + 1);
@@ -264,15 +261,15 @@ export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> 
     const hierarchyJson = await get<HierarchyJson>(`${apiPath}/${hierarchyPath}/${mostRecentTitleDate}/title-${ref.title}.json`);
 
     if (ref.chapter) {
-      let chapter = findChapter(hierarchyJson, ref.chapter);
+      const chapter = findChapter(hierarchyJson, ref.chapter);
       if (!chapter) {
         continue;
       }
 
-      let chapterParts = chapter.children.filter((c) => !c.reserved && c.type == "part").map((c) => c.identifier)
+      const chapterParts = chapter.children.filter((c) => !c.reserved && c.type == "part").map((c) => c.identifier)
       if (!chapterParts || chapterParts.length == 0) {
         // get subchapter parts
-        let subchapters = chapter.children.filter((c) => c.type === "subchapter");
+        const subchapters = chapter.children.filter((c) => c.type === "subchapter");
         for (let x = 0; x < subchapters.length; ++x) {
           chapterParts.concat(subchapters.filter((c) => !c.reserved && c.type == "part").map((c) => c.identifier))
         }
@@ -285,14 +282,14 @@ export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> 
         const xmlData = await getXml(`${apiPath}/${xmlPath}/${mostRecentTitleDate}/title-${ref.title}.xml?part=${part}`);
 
         // download xml for each part and perform calculations
-        let parsedFcrData = parser.parse(xmlData);
+        const parsedFcrData = parser.parse(xmlData);
 
         // Get all the words in the <P> tags in the xml.
         iterateObjectRecursively(parsedFcrData, (key: string, value: any) => {
           if (key == "P") {
             if (Array.isArray(value)) {
               for (let i = 0; i < value.length; ++i) {
-                let s = value[i];
+                const s = value[i];
                 if (typeof s === "object") {
                   words += s["#text"];
                 } else {
@@ -318,7 +315,7 @@ export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> 
   statistics.changes = statistics.changes.concat(historicalChanges);
 
   for (let i = 0; i < statistics.changes.length; ++i) {
-    let change = statistics.changes[i];
+    const change = statistics.changes[i];
     const key = change.amendmentDate.toISOString().split("T")[0];
     statistics.changesByDate.set(key, (statistics.changesByDate.get(key) ?? 0) + 1);
   }

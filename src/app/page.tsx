@@ -48,7 +48,7 @@ export default async function Home() {
             width={16}
             height={16}
           />
-          Go to James's github→
+          Go to github→
         </a>
       </footer>
     </div>

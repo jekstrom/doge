@@ -16,7 +16,6 @@ import {
     RadialLinearScale,
   } from 'chart.js';
   import { Line, PolarArea } from 'react-chartjs-2';
-import { title } from 'process';
 
 interface DropdownProps {
     options: Agency[];
@@ -41,7 +40,6 @@ ChartJS.register(
 const Stats: React.FC<DropdownProps> = ({
     options,
     defaultValue = null,
-    onChange,
     label,
     placeholder = 'Search...',
 }) => {
