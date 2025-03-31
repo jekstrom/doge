@@ -313,6 +313,7 @@ export async function getAgencyStats(agency: Agency): Promise<StatisticsResult> 
   statistics.checksum = calculateMD5(words);
   statistics.wordCount += words.trim().split(" ").length;
   statistics.changes = statistics.changes.concat(historicalChanges);
+  statistics.changes = statistics.changes.sort((a,b) => a.amendmentDate.getTime() - b.amendmentDate.getTime());
 
   for (let i = 0; i < statistics.changes.length; ++i) {
     const change = statistics.changes[i];
